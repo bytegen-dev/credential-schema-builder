@@ -32,6 +32,10 @@ function buildSchema(
 ): any {
   try {
     const attributeProperties: any = {
+      d: {
+        description: "Attributes block SAID",
+        type: "string",
+      },
       i: {
         description: "Issuee AID",
         type: "string",
