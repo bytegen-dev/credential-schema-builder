@@ -15,7 +15,7 @@ A web-based tool for creating and validating credential schemas for verifiable c
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm, yarn, pnpm, or bun
 
 ### Installation
@@ -67,17 +67,20 @@ pnpm start
 ## Usage
 
 1. **Enter Schema Metadata**:
+
    - Title (required)
    - Credential Type (required)
    - Version (default: 1.0.0)
    - Description (optional)
 
 2. **Add Attributes**:
+
    - Click "Add Attribute" to add custom attributes
    - Set attribute name, type (string, number, boolean, array, object)
    - Add description and mark as required if needed
 
 3. **Calculate SAID**:
+
    - Click "Calculate SAID" to generate the schema SAID
    - The schema will be validated and the SAID will be calculated using `$id` field
 
@@ -89,6 +92,7 @@ pnpm start
 ### SAID Calculation
 
 The tool uses `signify-ts` library to calculate SAIDs:
+
 - Uses `$id` field directly with the label parameter (not `d` field)
 - Calculates SAID for both the attributes block and the top-level schema
 - Uses Blake3_256 hashing algorithm with JSON serialization
@@ -96,8 +100,13 @@ The tool uses `signify-ts` library to calculate SAIDs:
 ### Schema Structure
 
 The generated schemas follow JSON Schema Draft 07 and include:
+
 - Standard credential fields: `v`, `d`, `u`, `i`, `ri`, `s`, `a`
-- Custom attributes defined by the user
+- Attributes block (`a` property) includes:
+  - `d`: Attributes block SAID (automatically calculated)
+  - `i`: Issuee AID (required)
+  - `dt`: Issuance date time (required)
+  - Custom attributes defined by the user
 - Proper `$id` field for schema identification
 
 ## Technologies
