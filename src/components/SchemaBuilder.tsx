@@ -6,8 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Editor from "@monaco-editor/react";
-import { Saider } from "signify-ts";
-import { Download, Plus, Trash2, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Saider, MtrDex, Serials } from "signify-ts";
+import {
+  Download,
+  Plus,
+  Trash2,
+  CheckCircle,
+  XCircle,
+  Loader2,
+} from "lucide-react";
 
 interface Attribute {
   name: string;
@@ -16,7 +23,6 @@ interface Attribute {
   required: boolean;
 }
 
-// Build the schema JSON structure - moved outside component to prevent render issues
 function buildSchema(
   title: string,
   description: string,
@@ -25,9 +31,8 @@ function buildSchema(
   attributes: Attribute[]
 ): any {
   try {
-    // Build attributes block properties
     const attributeProperties: any = {
-      d: {
+      $id: {
         description: "Attributes block SAID",
         type: "string",
       },
@@ -44,7 +49,6 @@ function buildSchema(
 
     const attributeRequired = ["i", "dt"];
 
-    // Add custom attributes
     attributes.forEach((attr) => {
       if (attr.name.trim()) {
         attributeProperties[attr.name] = {
@@ -57,10 +61,8 @@ function buildSchema(
       }
     });
 
-    // Calculate attributes block SAID (we'll calculate this after)
-    // Note: Saider.saidify requires a 'd' field (will be filled with SAID)
     const attributesBlock: any = {
-      d: "", // Required by Saider.saidify - will be filled with SAID
+      $id: "",
       description: "Attributes block",
       type: "object",
       properties: attributeProperties,
@@ -68,15 +70,21 @@ function buildSchema(
       required: attributeRequired,
     };
 
-    // Calculate attributes block SAID
-    const [attributesBlockWithSaid, attributesSaidObject] = Saider.saidify(attributesBlock);
-    // Extract the SAID from the 'd' field of the returned object
-    const attributesSaid = attributesSaidObject?.d ? String(attributesSaidObject.d) : "";
-    // Set the $id for JSON Schema
+    const [attributesBlockWithSaid, attributesSaidObject] = Saider.saidify(
+      attributesBlock,
+      MtrDex.Blake3_256,
+      Serials.JSON,
+      "$id"
+    );
+
+    const attributesSaid = attributesSaidObject?.$id
+      ? String(attributesSaidObject.$id)
+      : "";
+
     attributesBlock.$id = attributesSaid;
 
     const schema: any = {
-      $id: "", // Will be calculated from the schema
+      $id: "",
       $schema: "http://json-schema.org/draft-07/schema#",
       title: title || "Untitled Credential",
       description: description || "",
@@ -125,7 +133,9 @@ function buildSchema(
     return schema;
   } catch (error: any) {
     console.error("Error in buildSchema:", error);
-    throw new Error(`Failed to build schema: ${error?.message || "Unknown error"}`);
+    throw new Error(
+      `Failed to build schema: ${error?.message || "Unknown error"}`
+    );
   }
 }
 
@@ -135,7 +145,12 @@ export default function SchemaBuilder() {
   const [credentialType, setCredentialType] = useState("");
   const [version, setVersion] = useState("1.0.0");
   const [attributes, setAttributes] = useState<Attribute[]>([
-    { name: "attendeeName", type: "string", description: "The name of the attendee", required: true },
+    {
+      name: "attendeeName",
+      type: "string",
+      description: "The name of the attendee",
+      required: true,
+    },
   ]);
   const [schemaJson, setSchemaJson] = useState("");
   const [calculatedSaid, setCalculatedSaid] = useState("");
@@ -144,7 +159,6 @@ export default function SchemaBuilder() {
   const [isValid, setIsValid] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Calculate SAID from schema
   const calculateSaid = async () => {
     if (!title.trim() || !credentialType.trim()) {
       setValidationError("Title and Credential Type are required");
@@ -158,78 +172,55 @@ export default function SchemaBuilder() {
     setValidationError(null);
 
     try {
-      const schema = buildSchema(title, description, credentialType, version, attributes);
-      
-      // Debug: Log the schema object to see what it looks like
-      console.log("Built schema object (before SAID):", schema);
-      console.log("Schema $id before:", schema.$id);
-      console.log("Schema type:", typeof schema);
-      
-      // Ensure schema is a valid object
-      if (!schema || typeof schema !== 'object') {
+      const schema = buildSchema(
+        title,
+        description,
+        credentialType,
+        version,
+        attributes
+      );
+
+      if (!schema || typeof schema !== "object") {
         throw new Error("Failed to build schema");
       }
-      
-      // Calculate SAID from the schema (excluding $id temporarily, but including d field)
-      const schemaWithoutId = { ...schema };
-      delete schemaWithoutId.$id;
-      // Add 'd' field required by Saider.saidify
-      schemaWithoutId.d = "";
-      
-      console.log("Schema without $id (for SAID calculation):", schemaWithoutId);
-      
+
       let saidString: string;
       try {
-        const [schemaWithSaid, saidObject] = Saider.saidify(schemaWithoutId);
-        console.log("Saider.saidify result - schemaWithSaid:", schemaWithSaid);
-        console.log("Saider.saidify result - saidObject:", saidObject);
-        console.log("saidObject type:", typeof saidObject);
-        console.log("saidObject.d:", saidObject?.d);
-        
-        // The SAID is in the 'd' field of the returned object
-        if (!saidObject || typeof saidObject !== 'object' || !saidObject.d) {
-          console.error("SAID not found in saidObject.d! saidObject:", saidObject);
-          throw new Error(`SAID calculation failed: 'd' field not found in result`);
+        const [schemaWithSaid, saidObject] = Saider.saidify(
+          schema,
+          MtrDex.Blake3_256,
+          Serials.JSON,
+          "$id"
+        );
+
+        if (!saidObject || typeof saidObject !== "object" || !saidObject.$id) {
+          throw new Error(
+            `SAID calculation failed: '$id' field not found in result`
+          );
         }
-        
-        // Extract the SAID string from the 'd' field
-        saidString = String(saidObject.d);
-        console.log("saidString extracted from saidObject.d:", saidString);
-        console.log("saidString type:", typeof saidString);
+
+        saidString = String(saidObject.$id);
       } catch (saidError: any) {
-        console.error("Error in SAID calculation:", saidError);
-        // If SAID calculation fails, throw a clean error without the schema object
-        throw new Error(`Failed to calculate SAID: ${saidError?.message || "Unknown error"}`);
+        throw new Error(
+          `Failed to calculate SAID: ${saidError?.message || "Unknown error"}`
+        );
       }
-      
-      // Create a new schema object with the SAID, don't mutate the original
-      const finalSchema = {
-        ...schema,
-        $id: saidString
-      };
-      
-      console.log("Final schema $id:", finalSchema.$id);
-      console.log("Final schema $id type:", typeof finalSchema.$id);
-      
-      // Set the $id to the calculated SAID
+
       schema.$id = saidString;
-      
-      // Remove the 'd' field from the final schema (it's only needed for SAID calculation)
-      delete schema.d;
-      
-      // Also remove 'd' from the attributes block in the oneOf array
-      if (schema.properties?.a?.oneOf?.[1]) {
-        delete schema.properties.a.oneOf[1].d;
-      }
-      
+
       setCalculatedSaid(saidString);
       setSchemaJson(JSON.stringify(schema, null, 2));
       setIsValid(true);
       setValidationError(null);
     } catch (error: any) {
       console.error("Failed to calculate SAID:", error);
-      const errorMessage = error?.message || error?.toString() || "Failed to calculate SAID";
-      setValidationError(typeof errorMessage === 'string' ? errorMessage : "Failed to calculate SAID");
+      const errorMessage =
+        error?.message || error?.toString() || "Failed to calculate SAID";
+      setValidationError(
+        typeof errorMessage === "string"
+          ? errorMessage
+          : "Failed to calculate SAID"
+      );
       setIsValid(false);
       setCalculatedSaid("");
       setSchemaJson("");
@@ -238,22 +229,26 @@ export default function SchemaBuilder() {
     }
   };
 
-  // Set mounted flag on component mount
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Removed auto-calculation - user will click "Calculate SAID" button instead
-
   const addAttribute = () => {
-    setAttributes([...attributes, { name: "", type: "string", description: "", required: false }]);
+    setAttributes([
+      ...attributes,
+      { name: "", type: "string", description: "", required: false },
+    ]);
   };
 
   const removeAttribute = (index: number) => {
     setAttributes(attributes.filter((_, i) => i !== index));
   };
 
-  const updateAttribute = (index: number, field: keyof Attribute, value: string | boolean) => {
+  const updateAttribute = (
+    index: number,
+    field: keyof Attribute,
+    value: string | boolean
+  ) => {
     const updated = [...attributes];
     updated[index] = { ...updated[index], [field]: value };
     setAttributes(updated);
@@ -266,14 +261,16 @@ export default function SchemaBuilder() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${credentialType || "schema"}_${calculatedSaid.slice(0, 8)}.json`;
+    a.download = `${credentialType || "schema"}_${calculatedSaid.slice(
+      0,
+      8
+    )}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
-  // Don't render until mounted to prevent hydration issues
   if (!isMounted) {
     return null;
   }
@@ -345,12 +342,17 @@ export default function SchemaBuilder() {
         </CardHeader>
         <CardContent className="space-y-4">
           {attributes.map((attr, index) => (
-            <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border rounded-lg">
+            <div
+              key={index}
+              className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 border rounded-lg"
+            >
               <div className="md:col-span-3 space-y-2">
                 <Label>Name</Label>
                 <Input
                   value={attr.name}
-                  onChange={(e) => updateAttribute(index, "name", e.target.value)}
+                  onChange={(e) =>
+                    updateAttribute(index, "name", e.target.value)
+                  }
                   placeholder="attributeName"
                   className="font-mono text-sm"
                 />
@@ -359,7 +361,9 @@ export default function SchemaBuilder() {
                 <Label>Type</Label>
                 <select
                   value={attr.type}
-                  onChange={(e) => updateAttribute(index, "type", e.target.value)}
+                  onChange={(e) =>
+                    updateAttribute(index, "type", e.target.value)
+                  }
                   className="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                 >
                   <option value="string">string</option>
@@ -373,7 +377,9 @@ export default function SchemaBuilder() {
                 <Label>Description</Label>
                 <Input
                   value={attr.description}
-                  onChange={(e) => updateAttribute(index, "description", e.target.value)}
+                  onChange={(e) =>
+                    updateAttribute(index, "description", e.target.value)
+                  }
                   placeholder="Attribute description"
                 />
               </div>
@@ -382,7 +388,9 @@ export default function SchemaBuilder() {
                 <input
                   type="checkbox"
                   checked={attr.required}
-                  onChange={(e) => updateAttribute(index, "required", e.target.checked)}
+                  onChange={(e) =>
+                    updateAttribute(index, "required", e.target.checked)
+                  }
                   className="h-9 w-9 rounded border"
                 />
               </div>
@@ -408,7 +416,9 @@ export default function SchemaBuilder() {
             <div className="flex items-center gap-2">
               <Button
                 onClick={calculateSaid}
-                disabled={isCalculating || !title.trim() || !credentialType.trim()}
+                disabled={
+                  isCalculating || !title.trim() || !credentialType.trim()
+                }
                 size="sm"
                 variant="outline"
               >
@@ -447,7 +457,9 @@ export default function SchemaBuilder() {
             <div className="space-y-2">
               <Label>Schema SAID</Label>
               <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                <code className="text-sm font-mono flex-1">{calculatedSaid}</code>
+                <code className="text-sm font-mono flex-1">
+                  {calculatedSaid}
+                </code>
                 <Button
                   onClick={() => navigator.clipboard.writeText(calculatedSaid)}
                   size="sm"
@@ -461,7 +473,9 @@ export default function SchemaBuilder() {
 
           {validationError && (
             <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-600 dark:text-red-400">{validationError}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {validationError}
+              </p>
             </div>
           )}
 
@@ -491,4 +505,3 @@ export default function SchemaBuilder() {
     </div>
   );
 }
-
