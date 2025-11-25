@@ -32,6 +32,10 @@ function buildSchema(
 ): any {
   try {
     const attributeProperties: any = {
+      d: {
+        description: "Attributes block SAID",
+        type: "string",
+      },
       i: {
         description: "Issuee AID",
         type: "string",
@@ -77,7 +81,15 @@ function buildSchema(
       ? String(attributesSaidObject.$id)
       : "";
 
-    attributesBlock.$id = attributesSaid;
+    // Create a clean attributes block schema without $id for validation
+    // $id is metadata for SAID calculation, not a field in the actual credential data
+    const attributesBlockSchema = {
+      description: "Attributes block",
+      type: "object",
+      properties: attributeProperties,
+      additionalProperties: false,
+      required: attributeRequired,
+    };
 
     const schema: any = {
       $id: "",
@@ -118,7 +130,7 @@ function buildSchema(
               description: "Attributes block SAID",
               type: "string",
             },
-            attributesBlock,
+            attributesBlockSchema,
           ],
         },
       },
