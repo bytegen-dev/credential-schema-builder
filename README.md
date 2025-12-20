@@ -118,10 +118,6 @@ The generated schemas follow JSON Schema Draft 07 and include:
 - **Radix UI** - UI components
 - **Tailwind CSS** - Styling
 
-## License
-
-[Add your license here]
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
