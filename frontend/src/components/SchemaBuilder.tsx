@@ -17,9 +17,7 @@ import {
 } from "lucide-react";
 import { Attribute } from "@credential-schema-builder/shared";
 
-const getApiBaseUrl = () => {
-  return "";
-};
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default function SchemaBuilder() {
   const [title, setTitle] = useState("");
@@ -53,8 +51,7 @@ export default function SchemaBuilder() {
     setValidationError(null);
 
     try {
-      const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/schemas`, {
+      const response = await fetch(`${API_BASE_URL}/api/schemas`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
