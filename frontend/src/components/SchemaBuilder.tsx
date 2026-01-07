@@ -18,10 +18,7 @@ import {
 import { Attribute } from "@credential-schema-builder/shared";
 
 const getApiBaseUrl = () => {
-  if (typeof window !== "undefined") {
-    return process.env.NEXT_PUBLIC_API_URL || "";
-  }
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  return "";
 };
 
 export default function SchemaBuilder() {
