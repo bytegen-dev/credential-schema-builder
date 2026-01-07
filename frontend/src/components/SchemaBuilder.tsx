@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,6 @@ export default function SchemaBuilder() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isValid, setIsValid] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
 
   const calculateSaid = async () => {
     if (!title.trim() || !credentialType.trim()) {
@@ -99,10 +98,6 @@ export default function SchemaBuilder() {
     }
   };
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   const addAttribute = () => {
     setAttributes([
       ...attributes,
@@ -140,10 +135,6 @@ export default function SchemaBuilder() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
-
-  if (!isMounted) {
-    return null;
-  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
