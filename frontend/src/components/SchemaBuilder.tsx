@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import Editor from "@monaco-editor/react";
 import {
   Download,
@@ -16,8 +17,7 @@ import {
 } from "lucide-react";
 import { Attribute } from "@credential-schema-builder/shared";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default function SchemaBuilder() {
   const [title, setTitle] = useState("");
@@ -367,6 +367,34 @@ export default function SchemaBuilder() {
                   readOnly: true,
                 }}
                 theme="vs-dark"
+                loading={
+                  <div className="h-[400px] w-full bg-[#1e1e1e] border rounded-md overflow-hidden flex">
+                    <div className="w-12 bg-[#252526] text-[#858585] text-xs font-mono py-4 px-2 flex flex-col items-end space-y-3">
+                      {Array.from({ length: 15 }).map((_, i) => (
+                        <div key={i} className="h-4">
+                          {i + 1}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex-1 p-4 space-y-3">
+                      <Skeleton className="h-4 w-3/4 bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-full bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-5/6 bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-4/5 bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-full bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-3/4 bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-5/6 bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-full bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-4/5 bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-3/4 bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-full bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-5/6 bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-4/5 bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-3/4 bg-[#2d2d30]" />
+                      <Skeleton className="h-4 w-full bg-[#2d2d30]" />
+                    </div>
+                  </div>
+                }
               />
             </div>
           </div>
