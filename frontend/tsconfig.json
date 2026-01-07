@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@credential-schema-builder/shared": ["../shared/src"]
     }
   },
   "include": [
