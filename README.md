@@ -257,10 +257,6 @@ This project uses npm workspaces to manage the monorepo:
 4. Test locally → Run `npm run dev` to start backend with frontend
 5. Build for production → Run `npm run build` then `npm start`
 
-## License
-
-[Add your license here]
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
