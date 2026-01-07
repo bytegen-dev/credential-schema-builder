@@ -1,6 +1,10 @@
-"use client";
+import dynamic from "next/dynamic";
+import SchemaBuilderSkeleton from "@/components/SchemaBuilderSkeleton";
 
-import SchemaBuilder from "@/components/SchemaBuilder";
+const SchemaBuilder = dynamic(() => import("@/components/SchemaBuilder"), {
+  loading: () => <SchemaBuilderSkeleton />,
+  ssr: false,
+});
 
 export default function Home() {
   return (
