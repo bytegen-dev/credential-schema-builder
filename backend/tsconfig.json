@@ -12,7 +12,7 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@credential-schema-builder/shared": ["../shared/src"]
+      "@credential-schema-builder/shared": ["../shared/dist"]
     },
     "types": ["node"]
   },

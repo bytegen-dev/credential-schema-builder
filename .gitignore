@@ -37,6 +37,10 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 
+# Build outputs in source directories
+shared/src/*.js
+shared/src/*.d.ts
+
 # IDE
 .vscode/
 .idea/
