@@ -51,6 +51,11 @@ app.get("/web/*", (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 
+// Redirect root to /web
+app.get("/", (req, res) => {
+  res.redirect("/web");
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`Frontend: http://localhost:${PORT}/web`);
