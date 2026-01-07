@@ -1,3 +1,3 @@
-export * from "./types";
-export * from "./schema-builder";
+export * from "./types.js";
+export * from "./schema-builder.js";
 

@@ -1,5 +1,5 @@
 import { Saider, MtrDex, Serials } from "signify-ts";
-import { Attribute, SchemaMetadata, SchemaResponse } from "./types";
+import { Attribute, SchemaMetadata, SchemaResponse } from "./types.js";
 
 export function buildSchema(
   title: string,
